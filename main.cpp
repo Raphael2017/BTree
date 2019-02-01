@@ -8,6 +8,8 @@
 
 #include "btree.h"
 
+
+size_t total = 10000000;
 /*
  * [L,R)
  * */
@@ -19,7 +21,8 @@ int main() {
 
     std::map<int, Record*> tmp;
     std::vector<int> src;
-    for (size_t i = 0; i < 10000000; ++i)
+
+    for (size_t i = 0; i < total; ++i)
         src.push_back(rand());
 
     clock_t start, finish;
@@ -28,13 +31,17 @@ int main() {
         start = clock();
         for (auto it : src)
             tmp.insert(std::make_pair(it, nullptr));
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf( "STD::MAP::INSERT: %f seconds\n", duration );
+        start = clock();
         for (auto it : src)
         {
             assert(tmp.find(it) != tmp.end());
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
-        printf( "%f seconds\n", duration );
+        printf( "STD::MAP::FIND: %f seconds\n", duration );
     }
     {
         start = clock();
@@ -42,13 +49,17 @@ int main() {
         {
             bool t = tree.insert(it, nullptr);
         }
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf( "BTREE::INSERT: %f seconds\n", duration );
+        start = clock();
         for (auto it : src)
         {
             assert(tree.search(it, record));
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
-        printf( "%f seconds\n", duration );
+        printf( "BTREE::FIND: %f seconds\n", duration );
     }
 
     {
