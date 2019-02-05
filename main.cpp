@@ -9,7 +9,7 @@
 #include "btree.h"
 
 
-size_t total = 10000000;
+size_t total = 1000000;
 /*
  * [L,R)
  * */
@@ -30,7 +30,7 @@ int main() {
     {
         start = clock();
         for (auto it : src)
-            tmp.insert(std::make_pair(it, nullptr));
+            tmp.insert(std::make_pair(it, new Record{it}));
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf( "STD::MAP::INSERT: %f seconds\n", duration );
@@ -47,7 +47,7 @@ int main() {
         start = clock();
         for (auto it : src)
         {
-            bool t = tree.insert(it, nullptr);
+            bool t = tree.insert(it, new Record{it});
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -56,6 +56,7 @@ int main() {
         for (auto it : src)
         {
             assert(tree.search(it, record));
+            assert(record->data_ == it);
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -73,6 +74,9 @@ int main() {
             assert(r1 == r2);
         }
     }
+    auto a = tmp.size();
+    auto b = tree.size();
+    assert(tmp.size() == tree.size());
 
     return 0;
 }

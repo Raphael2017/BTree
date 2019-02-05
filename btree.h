@@ -1,7 +1,8 @@
 #ifndef BTREE_H
 #define BTREE_H
 
-#define BTREE_N 45
+#include <stddef.h>
+#define BTREE_N 128
 
 struct Record
 {
@@ -52,6 +53,7 @@ struct BTree
     bool search(int key, Record*& out);
     bool insert(int key, Record* record);
     bool erase(int key, Record*& out_record);
+    size_t size();
 };
 
 

@@ -140,6 +140,25 @@ bool BTree::erase(int key, Record*& out_record)
     if (!err) return false; // not exists
 }
 
+size_t BTree::size()
+{
+    BTNode* node = root_;
+    while (!node->is_leaf_node())
+    {
+        node = dynamic_cast<BTInnerNode*>(node)->links_[0];
+    }
+    assert(node && node->is_leaf_node());
+    auto leaf = dynamic_cast<BTLeafNode*>(node);
+    assert(leaf);
+    size_t ret = 0;
+    while (leaf)
+    {
+        ret += leaf->used_links_count_ - 1;
+        leaf = leaf->next_;
+    }
+    return ret;
+}
+
 BTLeafNode* BTLeafNode::insert_(int key, Record* record, bool& out)
 {
     out = true;
