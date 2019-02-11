@@ -2,7 +2,11 @@
 #define BTREE_H
 
 #include <stddef.h>
-#define BTREE_N 128
+#include <mcheck.h>
+
+#define BTREE_N 200
+
+#define BROTHER_ALGO1
 
 struct Record
 {
@@ -13,9 +17,10 @@ struct BTNode
 {
     BTNode* left_brother_{nullptr};
     BTNode* right_brother_{nullptr};
-    BTNode* get_left_brother() { return left_brother_; }
-    BTNode* get_right_brother(){ return right_brother_; }
+    BTNode* get_left_brother();
+    BTNode* get_right_brother();
     BTNode* parent_{nullptr};
+    int child_index_{-1};
     int keys_[BTREE_N];
     int used_links_count_{0};
     bool check() { return used_links_count_ >= ((BTREE_N+1)/2); }
@@ -23,6 +28,7 @@ struct BTNode
     bool full() { return used_links_count_ >= 1 + BTREE_N; }
     int key_count() { return used_links_count_ - 1; }
     virtual bool is_leaf_node() = 0;
+    virtual BTNode* get_child(int idx) = 0;
 };
 
 struct BTLeafNode : public BTNode
@@ -32,8 +38,12 @@ struct BTLeafNode : public BTNode
     bool search_record(int key, Record*& out_record);
     BTLeafNode* insert_(int key, Record* record, bool& out);
     BTLeafNode* split(int key, Record* record);
-    BTLeafNode* erase_(int key, Record*& out_record, bool& out);
+    int erase_(int key, Record*& out_record, bool& out);
     virtual bool is_leaf_node() override { return true; }
+    virtual BTNode* get_child(int idx) override
+    {
+        return nullptr;
+    }
 };
 
 struct BTInnerNode : public BTNode
@@ -45,6 +55,15 @@ struct BTInnerNode : public BTNode
     BTInnerNode* insert_(int key, BTNode* link, int& outkey);
     BTInnerNode* split(int key, BTNode* link, int& out_key);
     virtual bool is_leaf_node() override { return false; }
+    virtual BTNode* get_child(int idx) override
+    {
+        if (0 <= idx && idx < used_links_count_)
+        {
+            return links_[idx];
+        }
+        return nullptr;
+    }
+    BTInnerNode* erase_(int idx, int& out_idx);
 };
 
 struct BTree
@@ -54,6 +73,8 @@ struct BTree
     bool insert(int key, Record* record);
     bool erase(int key, Record*& out_record);
     size_t size();
+    bool check();
+    static bool check_(BTNode* nd);
 };
 
 

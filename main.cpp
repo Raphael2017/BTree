@@ -9,11 +9,25 @@
 #include "btree.h"
 
 
-size_t total = 1000000;
+size_t total = 10000000;
 /*
  * [L,R)
  * */
 size_t binary_search(int* keys_arr, size_t keys_size, int target);
+
+void test1(const std::map<int, Record*>& tmp, BTree* tree)
+{
+    tree->check();
+    Record* r = nullptr;
+    for (auto it : tmp)
+    {
+        if(!tree->search(it.first, r))
+        {
+            int sz = tree->size();
+            tree->search(it.first, r);
+        }
+    }
+}
 
 int main() {
     BTree tree;
@@ -77,7 +91,36 @@ int main() {
     auto a = tmp.size();
     auto b = tree.size();
     assert(tmp.size() == tree.size());
+    assert(tree.check());
 
+    {
+        start = clock();
+        for (auto it : src)
+        {
+            tmp.erase(it);
+            assert(tmp.find(it) == tmp.end());
+        }
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf( "STD::MAP::ERASE: %f seconds\n", duration );
+    }
+    {
+        start = clock();
+        for (auto it : src)
+        {
+            tmp.erase(it);
+            //auto sz1 = tmp.size();
+            //auto sz = tree.size();
+            bool t = tree.erase(it, record);
+            //test1(tmp, &tree);
+
+            assert(!tree.search(it, record));
+        }
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf( "BTREE::ERASE: %f seconds\n", duration );
+    }
+    assert(tree.size() == 0);
     return 0;
 }
 
