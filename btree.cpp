@@ -285,6 +285,12 @@ namespace storage {
         return check_(root_);
     }
 
+    void BTree::clear() {
+        clear_(root_);
+        root_ = nullptr;
+        size_ = 0;
+    }
+
     bool BTree::check_(BTNode *nd) {
         nd->get_right_brother();
         nd->get_left_brother();
@@ -305,6 +311,26 @@ namespace storage {
             }
         }
         return true;
+    }
+
+    void BTree::clear_(BTNode* node) {
+        if (node)
+        {
+            if (!node->is_leaf_node())
+            {
+                auto nd = dynamic_cast<BTInnerNode*>(node);
+                for (int i = 0; i < nd->used_links_count_; ++i)
+                {
+                    clear_(nd->get_child(i));
+                }
+                delete nd;
+            }
+            else
+            {
+                auto nd = dynamic_cast<BTLeafNode*>(node);
+                delete nd;
+            }
+        }
     }
 
     BTLeafNode *BTLeafNode::insert_(int key, Record *record, bool &out) {

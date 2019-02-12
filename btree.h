@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <mcheck.h>
 
-#define BTREE_N 50
+#define BTREE_N 5
 
 #define BROTHER_ALGO1
 
@@ -97,6 +97,8 @@ namespace storage {
 
         bool check();
 
+        void clear();
+
     private:
         bool _search_(int key, Record *&out);
 
@@ -108,6 +110,7 @@ namespace storage {
         int size_{0};
 
         static bool check_(BTNode *nd);
+        static void clear_(BTNode* node);
     };
 
 }

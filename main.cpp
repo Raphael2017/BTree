@@ -14,7 +14,7 @@ struct Record
     int data_;
 };
 
-size_t total = 10000000;
+size_t total = 100000;
 
 void test1(const std::map<int, Record*>& tmp, storage::BTree* tree)
 {
@@ -118,6 +118,7 @@ int main() {
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf( "STD::MAP::ERASE: %f seconds\n", duration );
     }
+    if (false)
     {
         start = clock();
         for (auto it : src)
@@ -140,6 +141,25 @@ int main() {
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf( "BTREE::ERASE: %f seconds\n", duration );
+    }
+    else
+    {
+        std::map<Record*, bool > tttt;
+        for (auto it : src)
+        {
+            record = nullptr;
+            if (tree.find(it, record))
+            {
+                tttt[(Record*)record] = true;
+            }
+        }
+        for (auto it : tttt)
+            delete(it.first);
+        start = clock();
+        tree.clear();
+        finish = clock();
+        duration = (double)(finish - start) / CLOCKS_PER_SEC;
+        printf( "BTREE::CLEAR: %f seconds\n", duration );
     }
     assert(tree.size() == 0);
     return 0;
