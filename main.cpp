@@ -9,29 +9,26 @@
 #include "btree.h"
 
 
-size_t total = 10000000;
-/*
- * [L,R)
- * */
-size_t binary_search(int* keys_arr, size_t keys_size, int target);
-
-void test1(const std::map<int, Record*>& tmp, BTree* tree)
+struct Record
 {
-    tree->check();
-    Record* r = nullptr;
+    int data_;
+};
+
+size_t total = 10000000;
+
+void test1(const std::map<int, Record*>& tmp, storage::BTree* tree)
+{
+    assert(tree->check());
+    storage::Record * r = nullptr;
     for (auto it : tmp)
     {
-        if(!tree->search(it.first, r))
-        {
-            int sz = tree->size();
-            tree->search(it.first, r);
-        }
+        assert(tree->find(it.first, r));
     }
 }
 
 int main() {
-    BTree tree;
-    Record* record = nullptr;
+    storage::BTree tree;
+    storage::Record* record = nullptr;
 
     std::map<int, Record*> tmp;
     std::vector<int> src;
@@ -44,7 +41,15 @@ int main() {
     {
         start = clock();
         for (auto it : src)
-            tmp.insert(std::make_pair(it, new Record{it}));
+        {
+            auto r = new Record{it};
+            auto ret = tmp.insert(std::make_pair(it, r));
+            if (!ret.second)
+            {
+                delete(r);
+            }
+        }
+
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf( "STD::MAP::INSERT: %f seconds\n", duration );
@@ -61,7 +66,13 @@ int main() {
         start = clock();
         for (auto it : src)
         {
-            bool t = tree.insert(it, new Record{it});
+            auto r = new Record{it};
+            bool t = tree.insert(it, r);
+            if (!t)
+            {
+                delete(r);
+            }
+
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -69,8 +80,8 @@ int main() {
         start = clock();
         for (auto it : src)
         {
-            assert(tree.search(it, record));
-            assert(record->data_ == it);
+            assert(tree.find(it, record));
+            assert(((Record*)record)->data_ == it);
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -84,7 +95,7 @@ int main() {
         for (auto it : others)
         {
             bool r1 = (tmp.find(it) != tmp.end());
-            bool r2 = tree.search(it, record);
+            bool r2 = tree.find(it, record);
             assert(r1 == r2);
         }
     }
@@ -97,6 +108,9 @@ int main() {
         start = clock();
         for (auto it : src)
         {
+            auto kk = tmp.find(it);
+            if (kk != tmp.end())
+                delete(kk->second);
             tmp.erase(it);
             assert(tmp.find(it) == tmp.end());
         }
@@ -108,13 +122,20 @@ int main() {
         start = clock();
         for (auto it : src)
         {
-            tmp.erase(it);
-            //auto sz1 = tmp.size();
-            //auto sz = tree.size();
+            record = nullptr;
             bool t = tree.erase(it, record);
+            if (t)
+            {
+                assert(((Record*)record)->data_ == it);
+                delete(((Record*)record));
+            }
+            else
+            {
+                assert(record == nullptr);
+            }
+            //tmp.erase(it);
             //test1(tmp, &tree);
-
-            assert(!tree.search(it, record));
+            assert(!tree.find(it, record));
         }
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -124,21 +145,4 @@ int main() {
     return 0;
 }
 
-size_t binary_search(int* keys_arr, size_t keys_size, int target)
-{
-    assert(keys_arr != nullptr);
-    assert(keys_size > 0);
-    int L = 0, R = keys_size;
-    while (L < R)
-    {
-        int M = L + ((R-L)>>1);   // avoid (L+R)/2 overflow
-        if (keys_arr[M] == target)
-            return M+1;
-        else if (keys_arr[M] > target)
-            R = M;
-        else
-            L = 1 + M;
-    }
-    return L;
-}
 
