@@ -14,7 +14,8 @@ struct Record
     int data_;
 };
 
-size_t total = 100000;
+size_t total = 10000000;
+#define switch_ true
 
 void test1(const std::map<int, Record*>& tmp, storage::BTree* tree)
 {
@@ -26,18 +27,45 @@ void test1(const std::map<int, Record*>& tmp, storage::BTree* tree)
     }
 }
 
-int main() {
+int main()
+{
+    storage::BTree tree;
+    std::vector<int> src{18, 31, 12, 10, 15, 48, 45, 47, 50, 52, 23, 30, 20};
+    for (auto it : src)
+    {
+        printf("\n\nINSERT %d:\n", it);
+        tree.insert(it, nullptr);
+        tree.print();
+    }
+
+    std::vector<int> del{15, 18, 23, 30, 31, 52, 50};
+    for (auto it : src)
+    {
+        printf("\n\nERASE %d:\n", it);
+        storage::Record *r = nullptr;
+        tree.erase(it, r);
+        tree.print();
+    }
+    return 0;
+}
+
+
+int main1() {
     storage::BTree tree;
     storage::Record* record = nullptr;
 
     std::map<int, Record*> tmp;
     std::vector<int> src;
 
+    clock_t start, finish;
+    double duration;
+
+
     for (size_t i = 0; i < total; ++i)
         src.push_back(rand());
 
-    clock_t start, finish;
-    double duration;
+
+    if (switch_)
     {
         start = clock();
         for (auto it : src)
@@ -88,6 +116,7 @@ int main() {
         printf( "BTREE::FIND: %f seconds\n", duration );
     }
 
+    if (switch_)
     {
         std::vector<int> others;
         for (size_t i = 0; i < 1000000; ++i)
@@ -101,9 +130,11 @@ int main() {
     }
     auto a = tmp.size();
     auto b = tree.size();
-    assert(tmp.size() == tree.size());
+    if (switch_)
+        assert(tmp.size() == tree.size());
     assert(tree.check());
 
+    if (switch_)
     {
         start = clock();
         for (auto it : src)
@@ -157,6 +188,7 @@ int main() {
             delete(it.first);
         start = clock();
         tree.clear();
+        assert(tree.size() == 0);
         finish = clock();
         duration = (double)(finish - start) / CLOCKS_PER_SEC;
         printf( "BTREE::CLEAR: %f seconds\n", duration );

@@ -99,6 +99,8 @@ namespace storage {
 
         void clear();
 
+        void print();
+
     private:
         bool _search_(int key, Record *&out);
 

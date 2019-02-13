@@ -1,5 +1,7 @@
 #include "btree.h"
 #include "assert.h"
+#include <queue>
+#include <stdio.h>
 
 namespace storage {
 
@@ -289,6 +291,59 @@ namespace storage {
         clear_(root_);
         root_ = nullptr;
         size_ = 0;
+    }
+
+    void BTree::print() {
+        std::queue<BTNode*> queue;
+        if (root_)
+            queue.push(root_);
+        while (queue.size() > 0)
+        {
+            BTNode* node = queue.front();
+            queue.pop();
+            if (!node->is_leaf_node())
+            {
+                auto nd = dynamic_cast<BTInnerNode*>(node);
+                assert(nd);
+                printf("[");
+                for (int i = 0; i < nd->key_count(); ++i)
+                {
+                    if (i == nd->key_count() - 1)
+                    {
+                        printf("%d", nd->keys_[i]);
+                    }
+                    else
+                    {
+                        printf("%d,", nd->keys_[i]);
+                    }
+                }
+                printf("]");
+                for (int i = 0; i < nd->used_links_count_; ++i)
+                    queue.push(nd->links_[i]);
+                if (!nd->parent_ || nd->child_index_ == nd->parent_->used_links_count_ - 1)
+                {
+                    printf("\n");
+                }
+            }
+            else
+            {
+                printf("(");
+                for (int i = 0; i < node->key_count(); ++i)
+                {
+                    if (i == node->key_count() - 1)
+                    {
+                        printf("%d", node->keys_[i]);
+                    }
+                    else
+                    {
+                        printf("%d,", node->keys_[i]);
+                    }
+                }
+                printf(")");
+                if (dynamic_cast<BTLeafNode*>(node)->next_)
+                    printf("->");
+            }
+        }
     }
 
     bool BTree::check_(BTNode *nd) {
