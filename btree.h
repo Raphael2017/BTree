@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <mcheck.h>
 
-#define BTREE_N 5
+#define BTREE_N 50
 
 #define BROTHER_ALGO1
 
